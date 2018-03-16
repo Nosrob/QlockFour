@@ -1,9 +1,6 @@
 #include <DS3231.h>
 #include <Wire.h>
 #include <Adafruit_NeoPixel.h>
-#ifdef __AVR__
-  #include <avr/power.h>
-#endif
 
 #define PIN 6
 #define NUM_LEDS 160
@@ -23,9 +20,10 @@ void setup() {
   // Clear LED strip
   strip.setBrightness(BRIGHTNESS);
   strip.begin();
-  strip.show(); // Initialize all pixels to 'off'
+  strip.show();
 
 }
 
 void loop() {
+
 }
