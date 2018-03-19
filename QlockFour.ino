@@ -2,16 +2,16 @@
 #include <Wire.h>
 #include <Adafruit_NeoPixel.h>
 
-const int LEDPIN = 6;
+const int LEDPIN = 13;
 const int NUM_LEDS = 110;
 const int BRIGHTNESS = 50;
 const int ROWS = 10;
 const int COLUMNS = 11;
 
-const int BUT1 = 13;
-const int BUT2 = 12;
+const int BUT1 = 9;
+const int BUT2 = 10;
 const int BUT3 = 11;
-const int BUT4 = 10;
+const int BUT4 = 12;
 
 const int MODE_DEFAULT = 0;
 const int MODE_SECONDS = 1;
@@ -21,6 +21,8 @@ int stateButton1 = 0;
 int stateButton2 = 0;
 int stateButton3 = 0;
 int stateButton4 = 0;
+
+DateTime displayedTime;
 
 bool button1Pressed = false;
 bool button2Pressed = false;
@@ -69,7 +71,7 @@ void setup() {
 
   // Init default mode
   currentMode = MODE_DEFAULT;
-  currentColor = strip.Color(0,0,0,150);
+  currentColor = strip.Color(0, 0, 0, 100);
 }
 
 void loop() {
@@ -94,20 +96,24 @@ void loop() {
 
   if (currentMode == MODE_DEFAULT) {
     IL_EST(currentColor);
+    showTime(currentColor);
   }
 
   if (currentMode == MODE_SANS_IL_EST) {
+    //showTime(currentColor);
   }
 
   if (currentMode == MODE_SECONDS) {
   }
 
-  Serial.print(now.hour(), DEC);
-  Serial.print(':');
-  Serial.print(now.minute(), DEC);
-  Serial.print(':');
-  Serial.print(now.second(), DEC);
-  Serial.println();
+  /*
+    Serial.print(now.hour(), DEC);
+    Serial.print(':');
+    Serial.print(now.minute(), DEC);
+    Serial.print(':');
+    Serial.print(now.second(), DEC);
+    Serial.println();
+  */
 }
 
 // Add 1 minute with seconds reset to 0
@@ -202,11 +208,11 @@ void MINUIT(uint32_t c) {
 }
 
 void HEURE(uint32_t c) {
-  setRow(5, 0, 9, c);
+  setRow(5, 5, 9, c);
 }
 
 void HEURES(uint32_t c) {
-  setRow(5, 0, 10, c);
+  setRow(5, 5, 10, c);
 }
 
 void MOINS_LE_QUART(uint32_t c) {
@@ -215,8 +221,12 @@ void MOINS_LE_QUART(uint32_t c) {
   setRow(7, 3, 7, c);
 }
 
+void MOINS(uint32_t c) {
+  setRow(6, 0, 4, c);
+}
+
 void M_CINQ(uint32_t c) {
-  setRow(8, 6, 10, c);
+  setRow(8, 6, 9, c);
 }
 
 void M_DIX(uint32_t c) {
@@ -241,4 +251,50 @@ void ET_DEMIE(uint32_t c) {
   setRow(9, 3, 7, c);
 }
 
+void showTime(uint32_t c) {
+  if (rtc.now().unixtime() - displayedTime.unixtime() < 60) {
+    Serial.print("Same time\n");
+    return;
+  }
+  displayedTime = rtc.now();
+  strip.show(); // Clear the strip
+  int hour = rtc.now().hour();
+  int minute = rtc.now().minute();
+  int second = rtc.now().second();
 
+  if (minute >= 35) {
+    MOINS(currentColor);
+    hour++;
+    if (minute >= 35 && minute < 40) M_VINGT_CINQ(currentColor);
+    if (minute >= 40 && minute < 45) M_VINGT(currentColor);
+    if (minute >= 45 && minute < 50) MOINS_LE_QUART(currentColor);
+    if (minute >= 50 && minute < 55) M_DIX(currentColor);
+    if (minute >= 55 && minute < 60) M_CINQ(currentColor);
+  } else {
+    if (minute >= 5 && minute < 10) M_CINQ(currentColor);
+    if (minute >= 10 && minute < 15) M_DIX(currentColor);
+    if (minute >= 15 && minute < 20) ET_QUART(currentColor);
+    if (minute >= 20 && minute < 25) M_VINGT(currentColor);
+    if (minute >= 25 && minute < 30) M_VINGT_CINQ(currentColor);
+    if (minute >= 30 && minute < 35) ET_DEMIE(currentColor);
+  }
+
+  if (hour == 13 || hour == 1) {
+    H_UNE(currentColor);
+    HEURE(currentColor);
+  } else {
+    if (hour == 14 || hour == 2) H_DIX(currentColor);
+    if (hour == 15 || hour == 3) H_TROIS(currentColor);
+    if (hour == 16 || hour == 4) H_QUATRE(currentColor);
+    if (hour == 17 || hour == 5) H_CINQ(currentColor);
+    if (hour == 18 || hour == 6) H_SIX(currentColor);
+    if (hour == 19 || hour == 7) H_SEPT(currentColor);
+    if (hour == 20 || hour == 8) H_NEUF(currentColor);
+    if (hour == 21 || hour == 9) H_NEUF(currentColor);
+    if (hour == 22 || hour == 10) H_DIX(currentColor);
+    if (hour == 23 || hour == 11) H_ONZE(currentColor);
+    HEURES(currentColor);
+  }
+  if (hour == 24 || hour == 0) MINUIT(currentColor);
+  if (hour == 12) MIDI(currentColor);
+}
