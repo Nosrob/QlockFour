@@ -15,7 +15,9 @@ const int BUT4 = 12;
 
 const int MODE_DEFAULT = 0;
 const int MODE_SECONDS = 1;
-const int MODE_DEFAULT_COLORCYCLE = 2;
+const int MODE_COLORCYCLE = 2;
+const int MODE_WHITE_OVER_RAINBOW = 3;
+const int TEST = -1;
 
 int stateButton1 = 0;
 int stateButton2 = 0;
@@ -27,9 +29,7 @@ bool button2Pressed = false;
 bool button3Pressed = false;
 bool button4Pressed = false;
 
-
 int currentMode;
-uint32_t currentColor;
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, LEDPIN, NEO_RGBW + NEO_KHZ800);
 DateTime displayedTime;
 RTC_DS3231 rtc;
@@ -44,6 +44,25 @@ int pixelMap[ROWS][COLUMNS] = {
   {22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32},
   {21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11},
   {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+};
+
+byte neopix_gamma[] = {
+  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,
+  1,  1,  1,  1,  1,  1,  1,  1,  1,  2,  2,  2,  2,  2,  2,  2,
+  2,  3,  3,  3,  3,  3,  3,  3,  4,  4,  4,  4,  4,  5,  5,  5,
+  5,  6,  6,  6,  6,  7,  7,  7,  7,  8,  8,  8,  9,  9,  9, 10,
+  10, 10, 11, 11, 11, 12, 12, 13, 13, 13, 14, 14, 15, 15, 16, 16,
+  17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 24, 24, 25,
+  25, 26, 27, 27, 28, 29, 29, 30, 31, 32, 32, 33, 34, 35, 35, 36,
+  37, 38, 39, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 50,
+  51, 52, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 66, 67, 68,
+  69, 70, 72, 73, 74, 75, 77, 78, 79, 81, 82, 83, 85, 86, 87, 89,
+  90, 92, 93, 95, 96, 98, 99, 101, 102, 104, 105, 107, 109, 110, 112, 114,
+  115, 117, 119, 120, 122, 124, 126, 127, 129, 131, 133, 135, 137, 138, 140, 142,
+  144, 146, 148, 150, 152, 154, 156, 158, 160, 162, 164, 167, 169, 171, 173, 175,
+  177, 180, 182, 184, 186, 189, 191, 193, 196, 198, 200, 203, 205, 208, 210, 213,
+  215, 218, 220, 223, 225, 228, 231, 233, 236, 239, 241, 244, 247, 249, 252, 255
 };
 
 void setup() {
@@ -69,8 +88,7 @@ void setup() {
   pinMode(BUT4, INPUT);
 
   // Init default mode
-  currentMode = MODE_DEFAULT_COLORCYCLE;
-  currentColor = strip.Color(0, 0, 0, 100);
+  currentMode = MODE_SECONDS;
 }
 
 void loop() {
@@ -95,21 +113,37 @@ void loop() {
 
   if (currentMode == MODE_DEFAULT) {
     if (rtc.now().hour() == displayedTime.hour() && rtc.now().minute() == displayedTime.minute()) return;
-    showTime(currentColor);
+    strip.clear();
+    showTime(strip.Color(0, 0, 0, 200));
   }
 
-  if (currentMode == MODE_DEFAULT_COLORCYCLE) {
+  if (currentMode == MODE_COLORCYCLE) {
     for (uint16_t j = 0; j < 256; j++) {
       for (uint16_t i = 0; i < strip.numPixels(); i++) {
+        strip.clear();
         showTime(Wheel(((i * 256 / strip.numPixels()) + j) & 255));
         delay(400);
       }
     }
   }
 
+  if (currentMode == MODE_WHITE_OVER_RAINBOW) {
+    for (int j = 0; j < 256; j++) {
+      for (uint16_t i = 0; i < strip.numPixels(); i++) {
+        strip.setPixelColor(i, Wheel(((i * 256 / strip.numPixels()) + j) & 255));
+      }
+      showTime(strip.Color(0, 0, 0, 200));
+      strip.show();
+      delay(20);
+    }
+  }
+
   if (currentMode == MODE_SECONDS) {
+    Serial.print(rtc.now().second());
+    Serial.println();
   }
 }
+
 
 // Add 1 minute with seconds reset to 0
 void doButton1() {
@@ -315,7 +349,7 @@ void ET_DEMIE(uint32_t c) {
 
 void VINGT_CINQ(uint32_t c) {
   VINGT(c);
-  strip.setPixelColor(pixelMap[9][5], c);
+  strip.setPixelColor(pixelMap[8][5], c);
   CINQ_M(c);
 }
 
@@ -335,7 +369,6 @@ void showTime(uint32_t c) {
   int second = rtc.now().second();
 
   displayedTime = rtc.now();
-  strip.clear();
 
   IL(c);
   EST(c);
