@@ -15,23 +15,23 @@ const int BUT4 = 12;
 
 const int MODE_DEFAULT = 0;
 const int MODE_SECONDS = 1;
-const int MODE_SANS_IL_EST = 2;
+const int MODE_DEFAULT_COLORCYCLE = 2;
 
 int stateButton1 = 0;
 int stateButton2 = 0;
 int stateButton3 = 0;
 int stateButton4 = 0;
 
-DateTime displayedTime;
-
 bool button1Pressed = false;
 bool button2Pressed = false;
 bool button3Pressed = false;
 bool button4Pressed = false;
 
+
 int currentMode;
 uint32_t currentColor;
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, LEDPIN, NEO_GRBW + NEO_KHZ800);
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, LEDPIN, NEO_RGBW + NEO_KHZ800);
+DateTime displayedTime;
 RTC_DS3231 rtc;
 int pixelMap[ROWS][COLUMNS] = {
   {109, 108, 107, 106, 105, 104, 103, 102, 101, 100, 99},
@@ -47,7 +47,6 @@ int pixelMap[ROWS][COLUMNS] = {
 };
 
 void setup() {
-
   // Init serial port
   Serial.begin(9600);
 
@@ -70,7 +69,7 @@ void setup() {
   pinMode(BUT4, INPUT);
 
   // Init default mode
-  currentMode = MODE_DEFAULT;
+  currentMode = MODE_DEFAULT_COLORCYCLE;
   currentColor = strip.Color(0, 0, 0, 100);
 }
 
@@ -95,25 +94,21 @@ void loop() {
   }
 
   if (currentMode == MODE_DEFAULT) {
-    IL_EST(currentColor);
+    if (rtc.now().hour() == displayedTime.hour() && rtc.now().minute() == displayedTime.minute()) return;
     showTime(currentColor);
   }
 
-  if (currentMode == MODE_SANS_IL_EST) {
-    //showTime(currentColor);
+  if (currentMode == MODE_DEFAULT_COLORCYCLE) {
+    for (uint16_t j = 0; j < 256; j++) {
+      for (uint16_t i = 0; i < strip.numPixels(); i++) {
+        showTime(Wheel(((i * 256 / strip.numPixels()) + j) & 255));
+        delay(400);
+      }
+    }
   }
 
   if (currentMode == MODE_SECONDS) {
   }
-
-  /*
-    Serial.print(now.hour(), DEC);
-    Serial.print(':');
-    Serial.print(now.minute(), DEC);
-    Serial.print(':');
-    Serial.print(now.second(), DEC);
-    Serial.println();
-  */
 }
 
 // Add 1 minute with seconds reset to 0
@@ -143,158 +138,255 @@ void doButton4() {
 
 }
 
-void setRow(int row, int x_start, int x_end, uint32_t c) {
-  for ( int i = x_start; i <= x_end; i++ ) {
-    strip.setPixelColor(pixelMap[row][i], c);
-  }
-  strip.show();
+void IL(uint32_t c) {
+  strip.setPixelColor(pixelMap[0][0], c);
+  strip.setPixelColor(pixelMap[0][1], c);
 }
 
-void IL_EST(uint32_t c) {
-  setRow(0, 0, 1, c);
-  setRow(0, 3, 5, c);
+void EST(uint32_t c) {
+  strip.setPixelColor(pixelMap[0][3], c);
+  strip.setPixelColor(pixelMap[0][4], c);
+  strip.setPixelColor(pixelMap[0][5], c);
 }
 
-void H_UNE(uint32_t c) {
-  setRow(2, 4, 6, c);
+void UNE(uint32_t c) {
+  strip.setPixelColor(pixelMap[3][4], c);
+  strip.setPixelColor(pixelMap[3][5], c);
+  strip.setPixelColor(pixelMap[3][6], c);
 }
 
-void H_DEUX(uint32_t c) {
-  setRow(0, 7, 10, c);
+void DEUX(uint32_t c) {
+  strip.setPixelColor(pixelMap[0][7], c);
+  strip.setPixelColor(pixelMap[0][8], c);
+  strip.setPixelColor(pixelMap[0][9], c);
+  strip.setPixelColor(pixelMap[0][10], c);
 }
 
-void H_TROIS(uint32_t c) {
-  setRow(1, 6, 10, c);
+void TROIS(uint32_t c) {
+  strip.setPixelColor(pixelMap[1][6], c);
+  strip.setPixelColor(pixelMap[1][7], c);
+  strip.setPixelColor(pixelMap[1][8], c);
+  strip.setPixelColor(pixelMap[1][9], c);
+  strip.setPixelColor(pixelMap[1][10], c);
 }
 
-void H_QUATRE(uint32_t c) {
-  setRow(1, 0, 5, c);
+void QUATRE(uint32_t c) {
+  strip.setPixelColor(pixelMap[1][0], c);
+  strip.setPixelColor(pixelMap[1][1], c);
+  strip.setPixelColor(pixelMap[1][2], c);
+  strip.setPixelColor(pixelMap[1][3], c);
+  strip.setPixelColor(pixelMap[1][4], c);
+  strip.setPixelColor(pixelMap[1][5], c);
 }
 
-void H_CINQ(uint32_t c) {
-  setRow(3, 7, 10, c);
+void CINQ_H(uint32_t c) {
+  strip.setPixelColor(pixelMap[3][7], c);
+  strip.setPixelColor(pixelMap[3][8], c);
+  strip.setPixelColor(pixelMap[3][9], c);
+  strip.setPixelColor(pixelMap[3][10], c);
 }
 
-void H_SIX(uint32_t c) {
-  setRow(3, 4, 6, c);
+void SIX(uint32_t c) {
+  strip.setPixelColor(pixelMap[3][4], c);
+  strip.setPixelColor(pixelMap[3][5], c);
+  strip.setPixelColor(pixelMap[3][6], c);
 }
 
-void H_SEPT(uint32_t c) {
-  setRow(2, 7, 10, c);
+void SEPT(uint32_t c) {
+  strip.setPixelColor(pixelMap[2][7], c);
+  strip.setPixelColor(pixelMap[2][8], c);
+  strip.setPixelColor(pixelMap[2][9], c);
+  strip.setPixelColor(pixelMap[2][10], c);
 }
 
-void H_HUIT(uint32_t c) {
-  setRow(3, 0, 3, c);
+void HUIT(uint32_t c) {
+  strip.setPixelColor(pixelMap[3][0], c);
+  strip.setPixelColor(pixelMap[3][1], c);
+  strip.setPixelColor(pixelMap[3][2], c);
+  strip.setPixelColor(pixelMap[3][3], c);
 }
 
-void H_NEUF(uint32_t c) {
-  setRow(2, 0, 3, c);
+void NEUF(uint32_t c) {
+  strip.setPixelColor(pixelMap[2][0], c);
+  strip.setPixelColor(pixelMap[2][1], c);
+  strip.setPixelColor(pixelMap[2][2], c);
+  strip.setPixelColor(pixelMap[2][3], c);
 }
 
-void H_DIX(uint32_t c) {
-  setRow(4, 2, 4, c);
+void DIX_H(uint32_t c) {
+  strip.setPixelColor(pixelMap[4][2], c);
+  strip.setPixelColor(pixelMap[4][3], c);
+  strip.setPixelColor(pixelMap[4][4], c);
 }
 
-void H_ONZE(uint32_t c) {
-  setRow(5, 0, 3, c);
+void ONZE(uint32_t c) {
+  strip.setPixelColor(pixelMap[5][0], c);
+  strip.setPixelColor(pixelMap[5][1], c);
+  strip.setPixelColor(pixelMap[5][2], c);
+  strip.setPixelColor(pixelMap[5][3], c);
 }
 
 void MIDI(uint32_t c) {
-  setRow(4, 0, 3, c);
+  strip.setPixelColor(pixelMap[4][0], c);
+  strip.setPixelColor(pixelMap[4][1], c);
+  strip.setPixelColor(pixelMap[4][2], c);
+  strip.setPixelColor(pixelMap[4][3], c);
 }
 
 void MINUIT(uint32_t c) {
-  setRow(4, 5, 10, c);
+  strip.setPixelColor(pixelMap[4][5], c);
+  strip.setPixelColor(pixelMap[4][6], c);
+  strip.setPixelColor(pixelMap[4][7], c);
+  strip.setPixelColor(pixelMap[4][8], c);
+  strip.setPixelColor(pixelMap[4][9], c);
+  strip.setPixelColor(pixelMap[4][10], c);
 }
 
 void HEURE(uint32_t c) {
-  setRow(5, 5, 9, c);
+  strip.setPixelColor(pixelMap[5][5], c);
+  strip.setPixelColor(pixelMap[5][6], c);
+  strip.setPixelColor(pixelMap[5][7], c);
+  strip.setPixelColor(pixelMap[5][8], c);
+  strip.setPixelColor(pixelMap[5][9], c);
 }
 
 void HEURES(uint32_t c) {
-  setRow(5, 5, 10, c);
-}
-
-void MOINS_LE_QUART(uint32_t c) {
-  setRow(6, 0, 4, c);
-  setRow(6, 6, 7, c);
-  setRow(7, 3, 7, c);
+  HEURE(c);
+  strip.setPixelColor(pixelMap[5][10], c);
 }
 
 void MOINS(uint32_t c) {
-  setRow(6, 0, 4, c);
+  strip.setPixelColor(pixelMap[6][0], c);
+  strip.setPixelColor(pixelMap[6][1], c);
+  strip.setPixelColor(pixelMap[6][2], c);
+  strip.setPixelColor(pixelMap[6][3], c);
+  strip.setPixelColor(pixelMap[6][4], c);
 }
 
-void M_CINQ(uint32_t c) {
-  setRow(8, 6, 9, c);
+void LE(uint32_t c) {
+  strip.setPixelColor(pixelMap[6][6], c);
+  strip.setPixelColor(pixelMap[6][7], c);
 }
 
-void M_DIX(uint32_t c) {
-  setRow(6, 8, 10, c);
+void ET(uint32_t c) {
+  strip.setPixelColor(pixelMap[7][0], c);
+  strip.setPixelColor(pixelMap[7][1], c);
 }
 
-void ET_QUART(uint32_t c) {
-  setRow(7, 0, 1, c);
-  setRow(7, 3, 7, c);
+void QUART(uint32_t c) {
+  strip.setPixelColor(pixelMap[7][3], c);
+  strip.setPixelColor(pixelMap[7][4], c);
+  strip.setPixelColor(pixelMap[7][5], c);
+  strip.setPixelColor(pixelMap[7][6], c);
+  strip.setPixelColor(pixelMap[7][7], c);
 }
 
-void M_VINGT(uint32_t c) {
-  setRow(8, 0, 4, c);
+void CINQ_M(uint32_t c) {
+  strip.setPixelColor(pixelMap[8][6], c);
+  strip.setPixelColor(pixelMap[8][7], c);
+  strip.setPixelColor(pixelMap[8][8], c);
+  strip.setPixelColor(pixelMap[8][9], c);
 }
 
-void M_VINGT_CINQ(uint32_t c) {
-  setRow(8, 0, 10, c);
+void DIX_M(uint32_t c) {
+  strip.setPixelColor(pixelMap[6][8], c);
+  strip.setPixelColor(pixelMap[6][9], c);
+  strip.setPixelColor(pixelMap[6][10], c);
+}
+
+
+void VINGT(uint32_t c) {
+  strip.setPixelColor(pixelMap[8][0], c);
+  strip.setPixelColor(pixelMap[8][1], c);
+  strip.setPixelColor(pixelMap[8][2], c);
+  strip.setPixelColor(pixelMap[8][3], c);
+  strip.setPixelColor(pixelMap[8][4], c);
 }
 
 void ET_DEMIE(uint32_t c) {
-  setRow(9, 0, 1, c);
-  setRow(9, 3, 7, c);
+  strip.setPixelColor(pixelMap[9][0], c);
+  strip.setPixelColor(pixelMap[9][1], c);
+  strip.setPixelColor(pixelMap[9][3], c);
+  strip.setPixelColor(pixelMap[9][4], c);
+  strip.setPixelColor(pixelMap[9][5], c);
+  strip.setPixelColor(pixelMap[9][6], c);
+  strip.setPixelColor(pixelMap[9][7], c);
+}
+
+void VINGT_CINQ(uint32_t c) {
+  VINGT(c);
+  strip.setPixelColor(pixelMap[9][5], c);
+  CINQ_M(c);
+}
+
+void ET_QUART(uint32_t c) {
+  ET(c);
+  QUART(c);
+}
+
+void LE_QUART(uint32_t c) {
+  LE(c);
+  QUART(c);
 }
 
 void showTime(uint32_t c) {
-  if (rtc.now().unixtime() - displayedTime.unixtime() < 60) {
-    Serial.print("Same time\n");
-    return;
-  }
-  displayedTime = rtc.now();
-  strip.show(); // Clear the strip
   int hour = rtc.now().hour();
   int minute = rtc.now().minute();
   int second = rtc.now().second();
 
+  displayedTime = rtc.now();
+  strip.clear();
+
+  IL(c);
+  EST(c);
+
   if (minute >= 35) {
-    MOINS(currentColor);
+    MOINS(c);
     hour++;
-    if (minute >= 35 && minute < 40) M_VINGT_CINQ(currentColor);
-    if (minute >= 40 && minute < 45) M_VINGT(currentColor);
-    if (minute >= 45 && minute < 50) MOINS_LE_QUART(currentColor);
-    if (minute >= 50 && minute < 55) M_DIX(currentColor);
-    if (minute >= 55 && minute < 60) M_CINQ(currentColor);
+    if (minute >= 35 && minute < 40) VINGT_CINQ(c);
+    if (minute >= 40 && minute < 45) VINGT(c);
+    if (minute >= 45 && minute < 50) LE_QUART(c);
+    if (minute >= 50 && minute < 55) DIX_M(c);
+    if (minute >= 55 && minute < 60) CINQ_M(c);
   } else {
-    if (minute >= 5 && minute < 10) M_CINQ(currentColor);
-    if (minute >= 10 && minute < 15) M_DIX(currentColor);
-    if (minute >= 15 && minute < 20) ET_QUART(currentColor);
-    if (minute >= 20 && minute < 25) M_VINGT(currentColor);
-    if (minute >= 25 && minute < 30) M_VINGT_CINQ(currentColor);
-    if (minute >= 30 && minute < 35) ET_DEMIE(currentColor);
+    if (minute >= 5 && minute < 10) CINQ_M(c);
+    if (minute >= 10 && minute < 15) DIX_M(c);
+    if (minute >= 15 && minute < 20) ET_QUART(c);
+    if (minute >= 20 && minute < 25) VINGT(c);
+    if (minute >= 25 && minute < 30) VINGT_CINQ(c);
+    if (minute >= 30 && minute < 35) ET_DEMIE(c);
   }
 
   if (hour == 13 || hour == 1) {
-    H_UNE(currentColor);
-    HEURE(currentColor);
+    UNE(c); HEURE(c);
   } else {
-    if (hour == 14 || hour == 2) H_DIX(currentColor);
-    if (hour == 15 || hour == 3) H_TROIS(currentColor);
-    if (hour == 16 || hour == 4) H_QUATRE(currentColor);
-    if (hour == 17 || hour == 5) H_CINQ(currentColor);
-    if (hour == 18 || hour == 6) H_SIX(currentColor);
-    if (hour == 19 || hour == 7) H_SEPT(currentColor);
-    if (hour == 20 || hour == 8) H_NEUF(currentColor);
-    if (hour == 21 || hour == 9) H_NEUF(currentColor);
-    if (hour == 22 || hour == 10) H_DIX(currentColor);
-    if (hour == 23 || hour == 11) H_ONZE(currentColor);
-    HEURES(currentColor);
+    if (hour == 14 || hour == 2) DIX_H(c);
+    if (hour == 15 || hour == 3) TROIS(c);
+    if (hour == 16 || hour == 4) QUATRE(c);
+    if (hour == 17 || hour == 5) CINQ_H(c);
+    if (hour == 18 || hour == 6) SIX(c);
+    if (hour == 19 || hour == 7) SEPT(c);
+    if (hour == 20 || hour == 8) HUIT(c);
+    if (hour == 21 || hour == 9) NEUF(c);
+    if (hour == 22 || hour == 10) DIX_H(c);
+    if (hour == 23 || hour == 11) ONZE(c);
+    HEURES(c);
   }
-  if (hour == 24 || hour == 0) MINUIT(currentColor);
-  if (hour == 12) MIDI(currentColor);
+  if (hour == 24 || hour == 0) MINUIT(c);
+  if (hour == 12) MIDI(c);
+
+  strip.show();
+}
+
+uint32_t Wheel(byte WheelPos) {
+  WheelPos = 255 - WheelPos;
+  if (WheelPos < 85) {
+    return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3, 0);
+  }
+  if (WheelPos < 170) {
+    WheelPos -= 85;
+    return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3, 0);
+  }
+  WheelPos -= 170;
+  return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0, 0);
 }
