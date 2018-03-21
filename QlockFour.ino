@@ -196,9 +196,12 @@ void showTime(uint32_t c) {
     if (minute >= 30 && minute < 35) ET_DEMIE(c);
   }
 
-  if (hour == 13 || hour == 1) {
+  if (hour == 24 || hour == 0) MINUIT(c);
+  else if (hour == 12) MIDI(c);
+  else if (hour == 13 || hour == 1) {
     UNE(c); HEURE(c);
-  } else {
+  }
+  else {
     if (hour == 14 || hour == 2) DIX_H(c);
     if (hour == 15 || hour == 3) TROIS(c);
     if (hour == 16 || hour == 4) QUATRE(c);
@@ -211,8 +214,7 @@ void showTime(uint32_t c) {
     if (hour == 23 || hour == 11) ONZE(c);
     HEURES(c);
   }
-  if (hour == 24 || hour == 0) MINUIT(c);
-  if (hour == 12) MIDI(c);
+
 
   strip.show();
 }
