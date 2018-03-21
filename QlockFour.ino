@@ -19,16 +19,6 @@ const int MODE_COLORCYCLE = 2;
 const int MODE_WHITE_OVER_RAINBOW = 3;
 const int TEST = -1;
 
-int stateButton1 = 0;
-int stateButton2 = 0;
-int stateButton3 = 0;
-int stateButton4 = 0;
-
-bool button1Pressed = false;
-bool button2Pressed = false;
-bool button3Pressed = false;
-bool button4Pressed = false;
-
 int currentMode;
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, LEDPIN, NEO_RGBW + NEO_KHZ800);
 DateTime displayedTime;
@@ -88,28 +78,16 @@ void setup() {
   pinMode(BUT4, INPUT);
 
   // Init default mode
-  currentMode = MODE_SECONDS;
+  currentMode = MODE_DEFAULT;
 }
 
 void loop() {
   DateTime now = rtc.now();
-  stateButton1 = digitalRead(BUT1);
-  stateButton2 = digitalRead(BUT2);
-  stateButton3 = digitalRead(BUT3);
-  stateButton4 = digitalRead(BUT4);
+  if (digitalRead(BUT1) == HIGH) doButton1();
+  if (digitalRead(BUT2) == HIGH) doButton2();
+  if (digitalRead(BUT3) == HIGH) doButton3();
+  if (digitalRead(BUT4) == HIGH) doButton4();
 
-  if (stateButton1 == HIGH) {
-    doButton1();
-  }
-  if (stateButton2 == HIGH) {
-    doButton2();
-  }
-  if (stateButton3 == HIGH) {
-    doButton3();
-  }
-  if (stateButton4 == HIGH) {
-    doButton4();
-  }
 
   if (currentMode == MODE_DEFAULT) {
     if (rtc.now().hour() == displayedTime.hour() && rtc.now().minute() == displayedTime.minute()) return;
@@ -144,193 +122,24 @@ void loop() {
     int rightDigit = sec % 10;
 
     strip.clear();
-
     if (rightDigit == 0) DIGIT_ZERO(false , strip.Color(0, 0, 0, 200));
+    if (leftDigit == 0) DIGIT_ZERO(true , strip.Color(0, 0, 0, 200));
     if (rightDigit == 1) DIGIT_ONE(false , strip.Color(0, 0, 0, 200));
     if (leftDigit == 1) DIGIT_ONE(true , strip.Color(0, 0, 0, 200));
     if (rightDigit == 2) DIGIT_TWO(false , strip.Color(0, 0, 0, 200));
     if (leftDigit == 2) DIGIT_TWO(true, strip.Color(0, 0, 0, 200));
     if (rightDigit == 3) DIGIT_THREE(false, strip.Color(0, 0, 0, 200));
     if (leftDigit == 3) DIGIT_THREE(true, strip.Color(0, 0, 0, 200));
-    if (rightDigit == 4) {
-      strip.setPixelColor(pixelMap[2][9], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[3][9], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[3][8], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[4][9], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[4][7], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[5][9], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[5][6], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[6][6], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[6][7], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[6][8], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[6][9], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[6][10], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[7][9], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[8][9], strip.Color(0, 0, 0, 200));
-    }
-    if (rightDigit == 5) {
-      strip.setPixelColor(pixelMap[2][6], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[2][7], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[2][8], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[2][9], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[2][10], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[3][6], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[4][6], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[4][7], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[4][8], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[4][9], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[5][10], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[6][10], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[7][6], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[7][10], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[8][7], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[8][8], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[8][9], strip.Color(0, 0, 0, 200));
-    }
-    if (rightDigit == 6) {
-      strip.setPixelColor(pixelMap[2][8], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[2][9], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[3][7], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[4][6], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[5][6], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[5][7], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[5][8], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[5][9], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[6][6], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[6][10], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[7][6], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[7][10], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[8][7], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[8][8], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[8][9], strip.Color(0, 0, 0, 200));
-    }
-    if (rightDigit == 7) {
-      strip.setPixelColor(pixelMap[2][6], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[2][7], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[2][8], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[2][9], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[2][10], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[3][10], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[4][9], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[5][8], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[6][7], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[7][7], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[8][7], strip.Color(0, 0, 0, 200));
-    }
-    if (rightDigit == 8) {
-      strip.setPixelColor(pixelMap[2][7], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[2][8], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[2][9], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[3][6], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[3][10], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[4][6], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[4][10], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[5][7], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[5][8], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[5][9], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[6][6], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[6][10], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[7][6], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[7][10], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[8][7], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[8][8], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[8][9], strip.Color(0, 0, 0, 200));
-    }
-    if (rightDigit == 9) {
-      strip.setPixelColor(pixelMap[2][7], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[2][8], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[2][9], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[3][6], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[3][10], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[4][6], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[4][10], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[5][7], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[5][8], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[5][9], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[5][10], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[6][10], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[7][6], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[7][9], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[8][7], strip.Color(0, 0, 0, 200));
-      strip.setPixelColor(pixelMap[8][8], strip.Color(0, 0, 0, 200));
-    }
+    if (rightDigit == 4) DIGIT_FOUR(false, strip.Color(0, 0, 0, 200));
+    if (leftDigit == 4) DIGIT_FOUR(true, strip.Color(0, 0, 0, 200));
+    if (rightDigit == 5) DIGIT_FIVE(false, strip.Color(0, 0, 0, 200));
+    if (leftDigit == 5) DIGIT_FIVE(true, strip.Color(0, 0, 0, 200));
+    if (rightDigit == 6) DIGIT_SIX(false, strip.Color(0, 0, 0, 200));
+    if (rightDigit == 7) DIGIT_SEVEN(false, strip.Color(0, 0, 0, 200));
+    if (rightDigit == 8) DIGIT_EIGHT(false, strip.Color(0, 0, 0, 200));
+    if (rightDigit == 9) DIGIT_NINE(false, strip.Color(0, 0, 0, 200));
     strip.show();
   }
-}
-
-void DIGIT_ZERO(bool left, uint32_t c) {
-  int shift = 0;
-  if (left) shift = 6;
-  strip.setPixelColor(pixelMap[2][7 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[2][8 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[2][9 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[3][6 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[3][10 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[4][6 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[4][10 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[5][6 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[5][10 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[6][6 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[6][10 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[7][6 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[7][10 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[8][7 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[8][8 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[8][9 - shift], strip.Color(0, 0, 0, 200));
-}
-
-
-void DIGIT_ONE(bool left, uint32_t c) {
-  int shift = 0;
-  if (left) shift = 6;
-  strip.setPixelColor(pixelMap[2][8 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[3][8 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[3][7 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[4][8 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[5][8 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[6][8 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[7][8 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[8][7 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[8][8 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[8][9 - shift], strip.Color(0, 0, 0, 200));
-}
-
-void DIGIT_TWO(bool left, uint32_t c) {
-  int shift = 0;
-  if (left) shift = 6;
-  strip.setPixelColor(pixelMap[2][7 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[2][8 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[2][9 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[3][6 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[3][10 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[4][10 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[5][9 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[6][8 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[7][7 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[8][6 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[8][7 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[8][8 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[8][9 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[8][10 - shift], strip.Color(0, 0, 0, 200));
-}
-
-void DIGIT_THREE(bool left, uint32_t c) {
-  int shift = 0;
-  if (left) shift = 6;
-  strip.setPixelColor(pixelMap[2][6 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[2][7 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[2][8 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[2][9 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[2][10 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[3][9 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[4][8 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[5][9 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[6][10 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[7][10 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[7][6 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[8][7 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[8][8 - shift], strip.Color(0, 0, 0, 200));
-  strip.setPixelColor(pixelMap[8][9 - shift], strip.Color(0, 0, 0, 200));
 }
 
 // Add 1 minute with seconds reset to 0
@@ -357,198 +166,7 @@ void doButton3() {
 
 // Cycle through lighting modes
 void doButton4() {
-
-}
-
-void IL(uint32_t c) {
-  strip.setPixelColor(pixelMap[0][0], c);
-  strip.setPixelColor(pixelMap[0][1], c);
-}
-
-void EST(uint32_t c) {
-  strip.setPixelColor(pixelMap[0][3], c);
-  strip.setPixelColor(pixelMap[0][4], c);
-  strip.setPixelColor(pixelMap[0][5], c);
-}
-
-void UNE(uint32_t c) {
-  strip.setPixelColor(pixelMap[3][4], c);
-  strip.setPixelColor(pixelMap[3][5], c);
-  strip.setPixelColor(pixelMap[3][6], c);
-}
-
-void DEUX(uint32_t c) {
-  strip.setPixelColor(pixelMap[0][7], c);
-  strip.setPixelColor(pixelMap[0][8], c);
-  strip.setPixelColor(pixelMap[0][9], c);
-  strip.setPixelColor(pixelMap[0][10], c);
-}
-
-void TROIS(uint32_t c) {
-  strip.setPixelColor(pixelMap[1][6], c);
-  strip.setPixelColor(pixelMap[1][7], c);
-  strip.setPixelColor(pixelMap[1][8], c);
-  strip.setPixelColor(pixelMap[1][9], c);
-  strip.setPixelColor(pixelMap[1][10], c);
-}
-
-void QUATRE(uint32_t c) {
-  strip.setPixelColor(pixelMap[1][0], c);
-  strip.setPixelColor(pixelMap[1][1], c);
-  strip.setPixelColor(pixelMap[1][2], c);
-  strip.setPixelColor(pixelMap[1][3], c);
-  strip.setPixelColor(pixelMap[1][4], c);
-  strip.setPixelColor(pixelMap[1][5], c);
-}
-
-void CINQ_H(uint32_t c) {
-  strip.setPixelColor(pixelMap[3][7], c);
-  strip.setPixelColor(pixelMap[3][8], c);
-  strip.setPixelColor(pixelMap[3][9], c);
-  strip.setPixelColor(pixelMap[3][10], c);
-}
-
-void SIX(uint32_t c) {
-  strip.setPixelColor(pixelMap[3][4], c);
-  strip.setPixelColor(pixelMap[3][5], c);
-  strip.setPixelColor(pixelMap[3][6], c);
-}
-
-void SEPT(uint32_t c) {
-  strip.setPixelColor(pixelMap[2][7], c);
-  strip.setPixelColor(pixelMap[2][8], c);
-  strip.setPixelColor(pixelMap[2][9], c);
-  strip.setPixelColor(pixelMap[2][10], c);
-}
-
-void HUIT(uint32_t c) {
-  strip.setPixelColor(pixelMap[3][0], c);
-  strip.setPixelColor(pixelMap[3][1], c);
-  strip.setPixelColor(pixelMap[3][2], c);
-  strip.setPixelColor(pixelMap[3][3], c);
-}
-
-void NEUF(uint32_t c) {
-  strip.setPixelColor(pixelMap[2][0], c);
-  strip.setPixelColor(pixelMap[2][1], c);
-  strip.setPixelColor(pixelMap[2][2], c);
-  strip.setPixelColor(pixelMap[2][3], c);
-}
-
-void DIX_H(uint32_t c) {
-  strip.setPixelColor(pixelMap[4][2], c);
-  strip.setPixelColor(pixelMap[4][3], c);
-  strip.setPixelColor(pixelMap[4][4], c);
-}
-
-void ONZE(uint32_t c) {
-  strip.setPixelColor(pixelMap[5][0], c);
-  strip.setPixelColor(pixelMap[5][1], c);
-  strip.setPixelColor(pixelMap[5][2], c);
-  strip.setPixelColor(pixelMap[5][3], c);
-}
-
-void MIDI(uint32_t c) {
-  strip.setPixelColor(pixelMap[4][0], c);
-  strip.setPixelColor(pixelMap[4][1], c);
-  strip.setPixelColor(pixelMap[4][2], c);
-  strip.setPixelColor(pixelMap[4][3], c);
-}
-
-void MINUIT(uint32_t c) {
-  strip.setPixelColor(pixelMap[4][5], c);
-  strip.setPixelColor(pixelMap[4][6], c);
-  strip.setPixelColor(pixelMap[4][7], c);
-  strip.setPixelColor(pixelMap[4][8], c);
-  strip.setPixelColor(pixelMap[4][9], c);
-  strip.setPixelColor(pixelMap[4][10], c);
-}
-
-void HEURE(uint32_t c) {
-  strip.setPixelColor(pixelMap[5][5], c);
-  strip.setPixelColor(pixelMap[5][6], c);
-  strip.setPixelColor(pixelMap[5][7], c);
-  strip.setPixelColor(pixelMap[5][8], c);
-  strip.setPixelColor(pixelMap[5][9], c);
-}
-
-void HEURES(uint32_t c) {
-  HEURE(c);
-  strip.setPixelColor(pixelMap[5][10], c);
-}
-
-void MOINS(uint32_t c) {
-  strip.setPixelColor(pixelMap[6][0], c);
-  strip.setPixelColor(pixelMap[6][1], c);
-  strip.setPixelColor(pixelMap[6][2], c);
-  strip.setPixelColor(pixelMap[6][3], c);
-  strip.setPixelColor(pixelMap[6][4], c);
-}
-
-void LE(uint32_t c) {
-  strip.setPixelColor(pixelMap[6][6], c);
-  strip.setPixelColor(pixelMap[6][7], c);
-}
-
-void ET(uint32_t c) {
-  strip.setPixelColor(pixelMap[7][0], c);
-  strip.setPixelColor(pixelMap[7][1], c);
-}
-
-void QUART(uint32_t c) {
-  strip.setPixelColor(pixelMap[7][3], c);
-  strip.setPixelColor(pixelMap[7][4], c);
-  strip.setPixelColor(pixelMap[7][5], c);
-  strip.setPixelColor(pixelMap[7][6], c);
-  strip.setPixelColor(pixelMap[7][7], c);
-}
-
-void CINQ_M(uint32_t c) {
-  strip.setPixelColor(pixelMap[8][6], c);
-  strip.setPixelColor(pixelMap[8][7], c);
-  strip.setPixelColor(pixelMap[8][8], c);
-  strip.setPixelColor(pixelMap[8][9], c);
-}
-
-void DIX_M(uint32_t c) {
-  strip.setPixelColor(pixelMap[6][8], c);
-  strip.setPixelColor(pixelMap[6][9], c);
-  strip.setPixelColor(pixelMap[6][10], c);
-}
-
-
-void VINGT(uint32_t c) {
-  strip.setPixelColor(pixelMap[8][0], c);
-  strip.setPixelColor(pixelMap[8][1], c);
-  strip.setPixelColor(pixelMap[8][2], c);
-  strip.setPixelColor(pixelMap[8][3], c);
-  strip.setPixelColor(pixelMap[8][4], c);
-}
-
-void ET_DEMIE(uint32_t c) {
-  strip.setPixelColor(pixelMap[9][0], c);
-  strip.setPixelColor(pixelMap[9][1], c);
-  strip.setPixelColor(pixelMap[9][3], c);
-  strip.setPixelColor(pixelMap[9][4], c);
-  strip.setPixelColor(pixelMap[9][5], c);
-  strip.setPixelColor(pixelMap[9][6], c);
-  strip.setPixelColor(pixelMap[9][7], c);
-}
-
-void VINGT_CINQ(uint32_t c) {
-  VINGT(c);
-  strip.setPixelColor(pixelMap[8][5], c);
-  CINQ_M(c);
-}
-
-void ET_QUART(uint32_t c) {
-  ET(c);
-  QUART(c);
-}
-
-void LE_QUART(uint32_t c) {
-  LE(c);
-  QUART(c);
+  // TODO
 }
 
 void showTime(uint32_t c) {
