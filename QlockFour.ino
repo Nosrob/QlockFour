@@ -78,7 +78,7 @@ void setup() {
   pinMode(BUT4, INPUT);
 
   // Init default mode
-  currentMode = MODE_DEFAULT;
+  currentMode = MODE_WHITE_OVER_RAINBOW;
 }
 
 void loop() {
@@ -108,7 +108,7 @@ void loop() {
   if (currentMode == MODE_WHITE_OVER_RAINBOW) {
     for (int j = 0; j < 256; j++) {
       for (uint16_t i = 0; i < strip.numPixels(); i++) {
-        strip.setPixelColor(i, Wheel(((i * 256 / strip.numPixels()) + j) & 255));
+        strip.setPixelColor(i, dimmerWheel(((i * 256 / strip.numPixels()) + j) & 255));
       }
       showTime(strip.Color(0, 0, 0, 200));
       strip.show();
@@ -231,3 +231,18 @@ uint32_t Wheel(byte WheelPos) {
   WheelPos -= 170;
   return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0, 0);
 }
+
+uint32_t dimmerWheel(byte WheelPos) {
+  WheelPos = 255 - WheelPos;
+  float dimmerCoeff = 0.3;
+  if (WheelPos < 85) {
+    return strip.Color(dimmerCoeff * (255 - WheelPos * 3), 0, dimmerCoeff * (WheelPos * 3), 0);
+  }
+  if (WheelPos < 170) {
+    WheelPos -= 85;
+    return strip.Color(0, dimmerCoeff * (WheelPos * 3), dimmerCoeff * (255 - WheelPos * 3), 0);
+  }
+  WheelPos -= 170;
+  return strip.Color(dimmerCoeff * (WheelPos * 3), dimmerCoeff * (255 - WheelPos * 3), 0, 0);
+}
+
