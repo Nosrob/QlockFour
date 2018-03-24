@@ -78,7 +78,7 @@ void setup() {
   pinMode(BUT4, INPUT);
 
   // Init default mode
-  currentMode = MODE_WHITE_OVER_RAINBOW;
+  currentMode = MODE_DEFAULT;
 }
 
 void loop() {
@@ -90,7 +90,9 @@ void loop() {
 
 
   if (currentMode == MODE_DEFAULT) {
-    if (rtc.now().hour() == displayedTime.hour() && rtc.now().minute() == displayedTime.minute()) return;
+    if (rtc.now().hour() == displayedTime.hour()
+        && rtc.now().minute() == displayedTime.minute()
+        && rtc.now().second() == displayedTime.second()) return;
     strip.clear();
     showTime(strip.Color(0, 0, 0, 200));
   }
@@ -174,48 +176,47 @@ void showTime(uint32_t c) {
   int minute = rtc.now().minute();
   int second = rtc.now().second();
 
-  displayedTime = rtc.now();
-
   IL(c);
   EST(c);
 
   if (minute >= 35) {
     MOINS(c);
     hour++;
-    if (minute >= 35 && minute < 40) VINGT_CINQ(c);
-    if (minute >= 40 && minute < 45) VINGT(c);
-    if (minute >= 45 && minute < 50) LE_QUART(c);
-    if (minute >= 50 && minute < 55) DIX_M(c);
-    if (minute >= 55 && minute < 60) CINQ_M(c);
-  } else {
-    if (minute >= 5 && minute < 10) CINQ_M(c);
-    if (minute >= 10 && minute < 15) DIX_M(c);
-    if (minute >= 15 && minute < 20) ET_QUART(c);
-    if (minute >= 20 && minute < 25) VINGT(c);
-    if (minute >= 25 && minute < 30) VINGT_CINQ(c);
-    if (minute >= 30 && minute < 35) ET_DEMIE(c);
   }
 
-  if (hour == 24 || hour == 0) MINUIT(c);
+  if ((minute >= 5 && minute < 10) || (minute >= 55 && minute < 60)) CINQ_M(c);
+  else if ((minute >= 10 && minute < 15) || (minute >= 50 && minute < 55)) DIX_M(c);
+  else if (minute >= 15 && minute < 20) ET_QUART(c);
+  else if (minute >= 45 && minute < 50) LE_QUART(c);
+  else if ((minute >= 20 && minute < 25) || (minute >= 40 && minute < 45)) VINGT(c);
+  else if ((minute >= 25 && minute < 30) || (minute >= 35 && minute < 40)) VINGT_CINQ(c);
+  else if (minute >= 30 && minute < 35) ET_DEMIE(c);
+
+  if (hour == 13 || hour == 1) UNE(c);
+  else if (hour == 14 || hour == 2) DEUX(c);
+  else if (hour == 15 || hour == 3) TROIS(c);
+  else if (hour == 16 || hour == 4) QUATRE(c);
+  else if (hour == 17 || hour == 5) CINQ_H(c);
+  else if (hour == 18 || hour == 6) SIX(c);
+  else if (hour == 19 || hour == 7) SEPT(c);
+  else if (hour == 20 || hour == 8) HUIT(c);
+  else if (hour == 21 || hour == 9) NEUF(c);
+  else if (hour == 22 || hour == 10) DIX_H(c);
+  else if (hour == 23 || hour == 11) ONZE(c);
   else if (hour == 12) MIDI(c);
-  else if (hour == 13 || hour == 1) {
-    UNE(c); HEURE(c);
-  }
-  else {
-    if (hour == 14 || hour == 2) DIX_H(c);
-    if (hour == 15 || hour == 3) TROIS(c);
-    if (hour == 16 || hour == 4) QUATRE(c);
-    if (hour == 17 || hour == 5) CINQ_H(c);
-    if (hour == 18 || hour == 6) SIX(c);
-    if (hour == 19 || hour == 7) SEPT(c);
-    if (hour == 20 || hour == 8) HUIT(c);
-    if (hour == 21 || hour == 9) NEUF(c);
-    if (hour == 22 || hour == 10) DIX_H(c);
-    if (hour == 23 || hour == 11) ONZE(c);
-    HEURES(c);
-  }
+  else if (hour == 24 || hour == 0) MINUIT(c);
+
+  if (hour == 1) HEURE(c);
+  else if ((hour > 1 && hour < 12) || (hour > 12 && hour < 24)) HEURES(c);
 
 
+  Serial.print(hour, DEC);
+  Serial.print(":");
+  Serial.print(minute, DEC);
+  Serial.print(":");
+  Serial.println(second, DEC);
+
+  displayedTime = rtc.now();
   strip.show();
 }
 
