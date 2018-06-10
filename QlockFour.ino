@@ -80,7 +80,7 @@ void setup() {
   pinMode(BUT4, INPUT);
 
   // Init default mode
-  currentMode = MODE_WHITE_OVER_RAINBOW;
+  currentMode = MODE_DEFAULT;
 }
 
 void readButtons() {
