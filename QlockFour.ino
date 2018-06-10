@@ -2,8 +2,14 @@
 #include <Wire.h>
 #include <Adafruit_NeoPixel.h>
 
-const int LEDPIN = 13;
-const int NUM_LEDS = 110;
+// Led strip
+const int LEDPIN1 = 13;
+const int NUM_LEDS1 = 110;
+
+// Four corners
+const int LEDPIN2 = 8;
+const int NUM_LEDS2 = 4;
+
 const int BRIGHTNESS = 50;
 const int ROWS = 10;
 const int COLUMNS = 11;
@@ -12,6 +18,10 @@ const int BUT1 = 9;
 const int BUT2 = 10;
 const int BUT3 = 11;
 const int BUT4 = 12;
+int stateButton1 = 0;
+int stateButton2 = 0;
+int stateButton3 = 0;
+int stateButton4 = 0;
 
 const int MODE_DEFAULT = 0;
 const int MODE_SECONDS = 1;
@@ -20,7 +30,8 @@ const int MODE_WHITE_OVER_RAINBOW = 3;
 const int TEST = -1;
 
 int currentMode;
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, LEDPIN, NEO_RGBW + NEO_KHZ800);
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS1, LEDPIN1, NEO_RGBW + NEO_KHZ800);
+Adafruit_NeoPixel corners = Adafruit_NeoPixel(NUM_LEDS2, LEDPIN2, NEO_RGBW + NEO_KHZ800);
 DateTime displayedTime;
 RTC_DS3231 rtc;
 int pixelMap[ROWS][COLUMNS] = {
@@ -35,6 +46,13 @@ int pixelMap[ROWS][COLUMNS] = {
   {21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11},
   {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 };
+int cornersMap[4] = {2, 1, 0, 3};
+
+unsigned long previousMillis = 0;
+unsigned long currentMillis = 0;
+uint16_t i = 0;
+uint16_t j = 0;
+
 
 void setup() {
   // Init serial port
@@ -44,6 +62,9 @@ void setup() {
   strip.setBrightness(BRIGHTNESS);
   strip.begin();
   strip.show();
+  corners.setBrightness(BRIGHTNESS);
+  corners.begin();
+  corners.show();
 
   // Init RTC module
   if (! rtc.begin()) {
@@ -59,43 +80,56 @@ void setup() {
   pinMode(BUT4, INPUT);
 
   // Init default mode
-  currentMode = MODE_COLORCYCLE;
+  currentMode = MODE_WHITE_OVER_RAINBOW;
+}
+
+void readButtons() {
+  //Serial.println(currentMode, DEC);
+
+  stateButton1 = digitalRead(BUT1);
+  stateButton2 = digitalRead(BUT2);
+  stateButton3 = digitalRead(BUT3);
+  stateButton4 = digitalRead(BUT4);
+
+  if (stateButton1 == HIGH) doButton1();
+  if (stateButton2 == HIGH) doButton2();
+  if (stateButton3 == HIGH) doButton3();
+  if (stateButton4 == HIGH) doButton4();
 }
 
 void loop() {
   DateTime now = rtc.now();
-  if (digitalRead(BUT1) == HIGH) doButton1();
-  if (digitalRead(BUT2) == HIGH) doButton2();
-  if (digitalRead(BUT3) == HIGH) doButton3();
-  if (digitalRead(BUT4) == HIGH) doButton4();
+  currentMillis = millis();
+  readButtons();
+
+  i %= strip.numPixels() + 1;
+  j %= 256;
 
   if (currentMode == MODE_DEFAULT) {
     if (rtc.now().hour() == displayedTime.hour()
         && rtc.now().minute() == displayedTime.minute()
         && rtc.now().second() == displayedTime.second()) return;
     strip.clear();
+    corners.clear();
     showTime(strip.Color(0, 0, 0, 200));
   }
 
   if (currentMode == MODE_COLORCYCLE) {
-    for (uint16_t j = 0; j < 256; j++) {
-      for (uint16_t i = 0; i < strip.numPixels(); i++) {
-        strip.clear();
-        showTime(Wheel(((i * 256 / strip.numPixels()) + j) & 255));
-        delay(400);
-      }
+    if (currentMillis - previousMillis >= 400) {
+      previousMillis = currentMillis;
+      strip.clear();
+      corners.clear();
+      showTime(Wheel(((i * 256 / strip.numPixels()) ) & 255));
+      i++;
     }
   }
 
   if (currentMode == MODE_WHITE_OVER_RAINBOW) {
-    for (int j = 0; j < 256; j++) {
-      for (uint16_t i = 0; i < strip.numPixels(); i++) {
-        strip.setPixelColor(i, dimmerWheel(((i * 256 / strip.numPixels()) + j) & 255));
-      }
-      showTime(strip.Color(0, 0, 0, 200));
-      strip.show();
-      delay(20);
-    }
+    corners.clear();
+    strip.setPixelColor(i, dimmerWheel(((i * 256 / strip.numPixels()) + j) & 255));
+    showTime(strip.Color(0, 0, 0, 200));
+    i++;
+    if (i == strip.numPixels()) j += 4;
   }
 
   if (currentMode == MODE_SECONDS) {
@@ -147,13 +181,17 @@ void doButton3() {
 
 // Cycle through lighting modes
 void doButton4() {
-  // TODO
+  currentMode++;
+  if (currentMode > MODE_WHITE_OVER_RAINBOW) currentMode = 0;
+  delay(200);
 }
 
 void showTime(uint32_t c) {
   int hour = rtc.now().hour();
   int minute = rtc.now().minute();
   int second = rtc.now().second();
+  int remainder = minute % 5;
+
   displayedTime = rtc.now();
 
   IL(c);
@@ -189,6 +227,23 @@ void showTime(uint32_t c) {
   if (hour == 1) HEURE(c);
   else if ((hour > 1 && hour < 12) || (hour > 12 && hour < 24)) HEURES(c);
 
+  if (remainder > 0) {
+    for (uint16_t i = 0; i < remainder; i++) {
+      corners.setPixelColor(cornersMap[i], c);
+    }
+  }
+
+  //  Serial.print(hour, DEC); //24-hr
+  //  Serial.print(":");
+  //  Serial.print(minute, DEC);
+  //  Serial.print(":");
+  //  Serial.println(second, DEC);
+  //  Serial.print("   ---   ");
+  //  Serial.println(currentMode, DEC);
+  //  Serial.print("   ---   ");
+  //  Serial.println(remainder, DEC);
+
   strip.show();
+  corners.show();
 }
 
