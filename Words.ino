@@ -10,9 +10,9 @@ void EST(uint32_t c) {
 }
 
 void UNE(uint32_t c) {
-  strip.setPixelColor(pixelMap[3][4], c);
-  strip.setPixelColor(pixelMap[3][5], c);
-  strip.setPixelColor(pixelMap[3][6], c);
+  strip.setPixelColor(pixelMap[2][4], c);
+  strip.setPixelColor(pixelMap[2][5], c);
+  strip.setPixelColor(pixelMap[2][6], c);
 }
 
 void DEUX(uint32_t c) {

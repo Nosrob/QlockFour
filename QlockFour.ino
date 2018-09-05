@@ -80,7 +80,7 @@ void setup() {
   pinMode(BUT4, INPUT);
 
   // Init default mode
-  currentMode = MODE_DEFAULT;
+  currentMode = MODE_COLORCYCLE;
 }
 
 void readButtons() {
@@ -107,8 +107,7 @@ void loop() {
 
   if (currentMode == MODE_DEFAULT) {
     if (rtc.now().hour() == displayedTime.hour()
-        && rtc.now().minute() == displayedTime.minute()
-        && rtc.now().second() == displayedTime.second()) return;
+        && rtc.now().minute() == displayedTime.minute()) return;
     strip.clear();
     corners.clear();
     showTime(strip.Color(0, 0, 0, 200));
