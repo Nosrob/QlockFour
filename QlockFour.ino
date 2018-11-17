@@ -223,7 +223,7 @@ void showTime(uint32_t c) {
   else if (hour == 12) MIDI(c);
   else if (hour == 24 || hour == 0) MINUIT(c);
 
-  if (hour == 1) HEURE(c);
+  if (hour == 1 || hour == 13) HEURE(c);
   else if ((hour > 1 && hour < 12) || (hour > 12 && hour < 24)) HEURES(c);
 
   if (remainder > 0) {
