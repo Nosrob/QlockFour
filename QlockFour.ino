@@ -26,7 +26,7 @@ int stateButton4 = 0;
 const int MODE_DEFAULT = 0;
 const int MODE_SECONDS = 1;
 const int MODE_COLORCYCLE = 2;
-const int MODE_WHITE_OVER_RAINBOW = 3;
+const int MODE_RAINBOW = 3;
 const int TEST = -1;
 
 int currentMode;
@@ -51,8 +51,6 @@ int cornersMap[4] = {2, 1, 0, 3};
 unsigned long previousMillis = 0;
 unsigned long currentMillis = 0;
 uint16_t i = 0;
-uint16_t j = 0;
-
 
 void setup() {
   // Init serial port
@@ -80,7 +78,7 @@ void setup() {
   pinMode(BUT4, INPUT);
 
   // Init default mode
-  currentMode = MODE_COLORCYCLE;
+  currentMode = MODE_RAINBOW;
 }
 
 void readButtons() {
@@ -98,19 +96,16 @@ void readButtons() {
 }
 
 void loop() {
-  DateTime now = rtc.now();
+ // DateTime now = rtc.now();
   currentMillis = millis();
   readButtons();
-
-  i %= strip.numPixels() + 1;
-  j %= 256;
 
   if (currentMode == MODE_DEFAULT) {
     if (rtc.now().hour() == displayedTime.hour()
         && rtc.now().minute() == displayedTime.minute()) return;
     strip.clear();
     corners.clear();
-    showTime(strip.Color(0, 0, 0, 200));
+    showTime(strip.Color(0,0,0,150));
   }
 
   if (currentMode == MODE_COLORCYCLE) {
@@ -123,12 +118,13 @@ void loop() {
     }
   }
 
-  if (currentMode == MODE_WHITE_OVER_RAINBOW) {
-    corners.clear();
-    strip.setPixelColor(i, dimmerWheel(((i * 256 / strip.numPixels()) + j) & 255));
-    showTime(strip.Color(0, 0, 0, 200));
+  if (currentMode == MODE_RAINBOW) {
     i++;
-    if (i == strip.numPixels()) j += 4;
+    i %= 256;
+    strip.clear();
+    corners.clear();
+    showRainbowTime();
+    delay(400);
   }
 
   if (currentMode == MODE_SECONDS) {
@@ -181,7 +177,7 @@ void doButton3() {
 // Cycle through lighting modes
 void doButton4() {
   currentMode++;
-  if (currentMode > MODE_WHITE_OVER_RAINBOW) currentMode = 0;
+  if (currentMode > MODE_RAINBOW) currentMode = 0;
   delay(200);
 }
 
@@ -227,8 +223,8 @@ void showTime(uint32_t c) {
   else if ((hour > 1 && hour < 12) || (hour > 12 && hour < 24)) HEURES(c);
 
   if (remainder > 0) {
-    for (uint16_t i = 0; i < remainder; i++) {
-      corners.setPixelColor(cornersMap[i], c);
+    for (uint16_t k = 0; k < remainder; k++) {
+      corners.setPixelColor(cornersMap[k], c);
     }
   }
 
@@ -246,3 +242,60 @@ void showTime(uint32_t c) {
   corners.show();
 }
 
+void showRainbowTime() {
+  int hour = rtc.now().hour();
+  int minute = rtc.now().minute();
+  int second = rtc.now().second();
+  int remainder = minute % 5;
+
+  displayedTime = rtc.now();
+
+  RAINBOW_IL();
+  RAINBOW_EST();
+  
+  if (minute >= 35) {
+    RAINBOW_MOINS();
+    hour++;
+  }
+
+  if ((minute >= 5 && minute < 10) || (minute >= 55 && minute < 60)) RAINBOW_CINQ_M();
+  else if ((minute >= 10 && minute < 15) || (minute >= 50 && minute < 55)) RAINBOW_DIX_M();
+  else if (minute >= 15 && minute < 20) RAINBOW_ET_QUART();
+  else if (minute >= 45 && minute < 50) RAINBOW_LE_QUART();
+  else if ((minute >= 20 && minute < 25) || (minute >= 40 && minute < 45)) RAINBOW_VINGT();
+  else if ((minute >= 25 && minute < 30) || (minute >= 35 && minute < 40)) RAINBOW_VINGT_CINQ();
+  else if (minute >= 30 && minute < 35) RAINBOW_ET_DEMIE();
+
+  if (hour == 13 || hour == 1) RAINBOW_UNE();
+  else if (hour == 14 || hour == 2) RAINBOW_DEUX();
+  else if (hour == 15 || hour == 3) RAINBOW_TROIS();
+  else if (hour == 16 || hour == 4) RAINBOW_QUATRE();
+  else if (hour == 17 || hour == 5) RAINBOW_CINQ_H();
+  else if (hour == 18 || hour == 6) RAINBOW_SIX();
+  else if (hour == 19 || hour == 7) RAINBOW_SEPT();
+  else if (hour == 20 || hour == 8) RAINBOW_HUIT();
+  else if (hour == 21 || hour == 9) RAINBOW_NEUF();
+  else if (hour == 22 || hour == 10) RAINBOW_DIX_H();
+  else if (hour == 23 || hour == 11) RAINBOW_ONZE();
+  else if (hour == 12) RAINBOW_MIDI();
+  else if (hour == 24 || hour == 0) RAINBOW_MINUIT();
+
+  if (hour == 1 || hour == 13) RAINBOW_HEURE();
+  else if ((hour > 1 && hour < 12) || (hour > 12 && hour < 24)) RAINBOW_HEURES();
+  
+  if (remainder > 0) {
+    corners.setPixelColor(cornersMap[0], Wheel(i & 255));
+    if (remainder > 1) {
+      corners.setPixelColor(cornersMap[1], Wheel((i +10) & 255));
+      if (remainder > 2) {
+        corners.setPixelColor(cornersMap[2], Wheel((i+9*11+10) & 255));
+        if (remainder > 3) {
+          corners.setPixelColor(cornersMap[3], Wheel((i+9*11) & 255));
+        }
+      }
+    }
+  }
+
+  strip.show();
+  corners.show();
+}
