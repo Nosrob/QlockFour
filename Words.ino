@@ -112,7 +112,7 @@ void LE(uint32_t c) {
 }
 
 void ET(uint32_t c) {
-  for (uint16_t k = 1; k <= 1; k++) {
+  for (uint16_t k = 0; k <= 1; k++) {
     strip.setPixelColor(pixelMap[7][k], c);
   }
 }
@@ -282,7 +282,7 @@ void RAINBOW_LE() {
 }
 
 void RAINBOW_ET() {
-  for (uint16_t k = 1; k <= 1; k++) {
+  for (uint16_t k = 0; k <= 1; k++) {
     strip.setPixelColor(pixelMap[7][k], Wheel((i+7*11+k) & 255));
   }
 }
@@ -453,7 +453,7 @@ void RAINBOW2_LE() {
 }
 
 void RAINBOW2_ET() {
-  for (uint16_t k = 1; k <= 1; k++) {
+  for (uint16_t k = 0; k <= 1; k++) {
     strip.setPixelColor(pixelMap[7][k], Wheel((i+(k*8)) & 255));
   }
 }
