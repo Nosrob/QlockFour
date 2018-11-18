@@ -27,6 +27,8 @@ const int MODE_DEFAULT = 0;
 const int MODE_SECONDS = 1;
 const int MODE_COLORCYCLE = 2;
 const int MODE_RAINBOW = 3;
+const int MODE_RAINBOW2 = 4;
+
 const int TEST = -1;
 
 int currentMode;
@@ -78,7 +80,7 @@ void setup() {
   pinMode(BUT4, INPUT);
 
   // Init default mode
-  currentMode = MODE_RAINBOW;
+  currentMode = MODE_RAINBOW2;
 }
 
 void readButtons() {
@@ -125,6 +127,15 @@ void loop() {
     corners.clear();
     showRainbowTime();
     delay(400);
+  }
+
+  if (currentMode == MODE_RAINBOW2) {
+    i++;
+    i %= 256;
+    strip.clear();
+    corners.clear();
+    showRainbow2Time();
+    delay(150);
   }
 
   if (currentMode == MODE_SECONDS) {
@@ -291,6 +302,64 @@ void showRainbowTime() {
         corners.setPixelColor(cornersMap[2], Wheel((i+9*11+10) & 255));
         if (remainder > 3) {
           corners.setPixelColor(cornersMap[3], Wheel((i+9*11) & 255));
+        }
+      }
+    }
+  }
+
+  strip.show();
+  corners.show();
+}
+
+void showRainbow2Time() {
+  int hour = rtc.now().hour();
+  int minute = rtc.now().minute();
+  int second = rtc.now().second();
+  int remainder = minute % 5;
+
+  displayedTime = rtc.now();
+
+  RAINBOW2_IL();
+  RAINBOW2_EST();
+  
+  if (minute >= 35) {
+    RAINBOW2_MOINS();
+    hour++;
+  }
+
+  if ((minute >= 5 && minute < 10) || (minute >= 55 && minute < 60)) RAINBOW2_CINQ_M();
+  else if ((minute >= 10 && minute < 15) || (minute >= 50 && minute < 55)) RAINBOW2_DIX_M();
+  else if (minute >= 15 && minute < 20) RAINBOW2_ET_QUART();
+  else if (minute >= 45 && minute < 50) RAINBOW2_LE_QUART();
+  else if ((minute >= 20 && minute < 25) || (minute >= 40 && minute < 45)) RAINBOW2_VINGT();
+  else if ((minute >= 25 && minute < 30) || (minute >= 35 && minute < 40)) RAINBOW2_VINGT_CINQ();
+  else if (minute >= 30 && minute < 35) RAINBOW2_ET_DEMIE();
+
+  if (hour == 13 || hour == 1) RAINBOW2_UNE();
+  else if (hour == 14 || hour == 2) RAINBOW2_DEUX();
+  else if (hour == 15 || hour == 3) RAINBOW2_TROIS();
+  else if (hour == 16 || hour == 4) RAINBOW2_QUATRE();
+  else if (hour == 17 || hour == 5) RAINBOW2_CINQ_H();
+  else if (hour == 18 || hour == 6) RAINBOW2_SIX();
+  else if (hour == 19 || hour == 7) RAINBOW2_SEPT();
+  else if (hour == 20 || hour == 8) RAINBOW2_HUIT();
+  else if (hour == 21 || hour == 9) RAINBOW2_NEUF();
+  else if (hour == 22 || hour == 10) RAINBOW2_DIX_H();
+  else if (hour == 23 || hour == 11) RAINBOW2_ONZE();
+  else if (hour == 12) RAINBOW2_MIDI();
+  else if (hour == 24 || hour == 0) RAINBOW2_MINUIT();
+
+  if (hour == 1 || hour == 13) RAINBOW2_HEURE();
+  else if ((hour > 1 && hour < 12) || (hour > 12 && hour < 24)) RAINBOW2_HEURES();
+  
+  if (remainder > 0) {
+    corners.setPixelColor(cornersMap[0], Wheel(i & 255));
+    if (remainder > 1) {
+      corners.setPixelColor(cornersMap[1], Wheel((i + 10*8) & 255));
+      if (remainder > 2) {
+        corners.setPixelColor(cornersMap[2], Wheel((i + 10*8) & 255));
+        if (remainder > 3) {
+          corners.setPixelColor(cornersMap[3], Wheel(i & 255));
         }
       }
     }
