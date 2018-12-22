@@ -1,6 +1,8 @@
 # QlockFour
 The LEDs in my QlockThree died. Time to build a new one.
 
+Final result can be seen here: https://imgur.com/a/ax7HYUV
+
 I used RGBW leds for this one, so I programmed several colorful modes:
 
 * Default mode: Time is displayed with the white LED 
